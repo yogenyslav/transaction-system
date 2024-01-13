@@ -3,3 +3,4 @@ logs
 *.sql
 .vscode
 .DS_Store
+.env
