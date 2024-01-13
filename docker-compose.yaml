@@ -1,0 +1,57 @@
+version: "3.9"
+
+volumes:
+  rabbitmq:
+  rabbitmq_storage:
+  pg_storage:
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    env_file:
+      - ./account_service/.env
+    ports:
+      - 5432:5432
+    volumes:
+      - pg_storage:/var/lib/postgresql/data
+
+  rabbit:
+    image: rabbitmq:3.12
+    expose:
+      - 5672
+    volumes:
+      - rabbitmq_storage:/var/lib/rabbitmq/data
+      - rabbitmq:/var/lib/rabbitmq/
+
+  transaction_service:
+    build:
+      context: ./transaction_service_example
+      dockerfile: Dockerfile
+      target: prod
+    image: transaction_service
+    depends_on:
+      - rabbit
+    env_file:
+      - ./transaction_service_example/.env
+    command: ./transaction
+
+  account_service:
+    build:
+      context: ./account_service
+      dockerfile: Dockerfile
+      target: prod
+    image: account_service
+    env_file:
+      - ./account_service/.env
+    environment:
+      - POSTGRES_HOST=db
+      - RABBIT_HOST=rabbit
+      - LOG_LEVEL=debug
+    depends_on:
+      - db
+      - rabbit
+      - transaction_service
+    ports:
+      - 9999:9999
+    command: ./account

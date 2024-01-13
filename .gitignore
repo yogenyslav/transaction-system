@@ -1,0 +1,5 @@
+*.code-workspace
+logs
+*.sql
+.vscode
+.DS_Store
