@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"io"
+	"math"
 	"net/http"
 )
 
@@ -44,7 +45,12 @@ func Convert(currency string, amount float64) (float64, error) {
 
 	for _, rate := range rates.Valute {
 		if rate.CharCode == currency {
-			return amount * (rate.Value / float64(rate.Nominal)), nil
+			if rate.Nominal == 0 {
+				return amount, errs.ErrCurrencyServiceUnavailable
+			}
+			// TODO: подумать, как правильно округлять валюту
+			convertedAmount := amount * (rate.Value / float64(rate.Nominal))
+			return math.Round(convertedAmount), nil
 		}
 	}
 
