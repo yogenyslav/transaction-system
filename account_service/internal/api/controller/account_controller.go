@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 
+	"accountservice/internal/errs"
 	"accountservice/internal/model"
 	"accountservice/internal/repo"
 	"accountservice/internal/service"
@@ -79,11 +81,16 @@ func (ac accountController) Invoice(c *fiber.Ctx) error {
 		}
 	}
 
+	in.Currency = strings.ToUpper(in.Currency)
 	convertedAmount, err := service.Convert(in.Currency, in.Amount)
 	if err != nil {
+		var msg = "failed to convert currency"
+		if errors.Is(err, errs.ErrUnsupportedCurrency) {
+			msg = fmt.Sprintf("%s is not supported now", in.Currency)
+		}
 		return model.ErrorResponse{
 			Code: http.StatusBadRequest,
-			Msg:  fmt.Sprintf("%s currency is not supported now", in.Currency),
+			Msg:  msg,
 			Err:  err,
 		}
 	}
