@@ -2,7 +2,7 @@
 
 test:
 	docker compose up db -d
-	cd account_service && go test -v ./tests/...
+	cd account_service && go test -count=1 -v ./tests/...
 
 docker: test
 	docker compose up -d --build
