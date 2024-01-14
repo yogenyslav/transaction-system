@@ -29,11 +29,8 @@ func NewAccountPostgresRepo(db *pgxpool.Pool) (AccountRepo, error) {
 			frozen numeric not null,
 			created_at timestamp default current_timestamp,
 			updated_at timestamp default current_timestamp
-		);
-
-		insert into %s(balance, frozen, created_at, updated_at)
-		values(0, 0, current_timestamp, current_timestamp);
-	`, model.AccountsTable, model.AccountsTable))
+		)
+	`, model.AccountsTable))
 	return accountPostgresRepo{db}, err
 }
 

@@ -11,6 +11,7 @@ import (
 
 type TransactionRepo interface {
 	InsertOne(c context.Context, in model.TransactionRequest, op model.Operation) (uint, error)
+	FindOne(c context.Context, transactionId uint) (model.Transaction, error)
 	UpdateOne(c context.Context, transactionId uint, status model.Status) error
 }
 
@@ -42,6 +43,16 @@ func (r transactionPostgresRepo) InsertOne(c context.Context, in model.Transacti
 		returning id
 	`, model.TransactionsTable), in.AccountId, in.Amount, in.Currency, op, model.Created).Scan(&transactionId)
 	return transactionId, err
+}
+
+func (r transactionPostgresRepo) FindOne(c context.Context, transactionId uint) (model.Transaction, error) {
+	var transaction model.Transaction
+	err := r.db.QueryRow(c, fmt.Sprintf(`
+		select id, fk_account_id, amount, currency, operation, status, created_at
+		from %s
+		where id=$1
+	`, model.TransactionsTable), transactionId).Scan(&transaction.Id, &transaction.AccountId, &transaction.Amount, &transaction.Currency, &transaction.Operation, &transaction.Status, &transaction.CreatedAt)
+	return transaction, err
 }
 
 func (r transactionPostgresRepo) UpdateOne(c context.Context, transactionId uint, status model.Status) error {

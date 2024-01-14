@@ -36,3 +36,8 @@ func MustNewConfig(path string) *Config {
 	}
 	return cfg
 }
+
+func (cfg *Config) WithDbHost(host string) *Config {
+	cfg.Postgres.Host = host
+	return cfg
+}

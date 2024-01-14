@@ -1,6 +1,10 @@
-.PHONY: docker docker_stop remove restart purge_restart
+.PHONY: test docker docker_stop remove restart purge_restart
 
-docker:
+test:
+	docker compose up db -d
+	cd account_service && go test -v ./tests/...
+
+docker: test
 	docker compose up -d --build
 
 docker_stop:
