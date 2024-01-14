@@ -22,8 +22,7 @@
 1. git clone
 2. cd transaction-system
 3. cp ./account_service/.env.example ./account_service/.env
-4. cp ./transaction_service_example/.env.example ./transaction_service_example/.env
-5. make docker
+4. make docker
 ```
 
 ### Cтек технологий
