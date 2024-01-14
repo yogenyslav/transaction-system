@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -27,7 +28,7 @@ func MustNewApp(transactionClient *service.TransactionClient, db *pgxpool.Pool) 
 				return c.Status(http.StatusInternalServerError).SendString(e.Error())
 			}
 			slog.Error(err.Msg, slog.Any("error", err.Err))
-			return c.Status(http.StatusInternalServerError).JSON(err)
+			return c.Status(err.Code).JSON(err)
 		},
 	})
 
@@ -50,6 +51,7 @@ func SetupRoutes(app *fiber.App, transactionClient *service.TransactionClient, d
 	err := make(map[string]error, 2)
 	accountRepo, e := repo.NewAccountPostgresRepo(db)
 	err["account"] = e
+
 	transactionRepo, e := repo.NewTransactionPostgresRepo(db)
 	err["transaction"] = e
 
@@ -62,6 +64,12 @@ func SetupRoutes(app *fiber.App, transactionClient *service.TransactionClient, d
 	}
 	if !success {
 		return errs.ErrRepoCreate
+	}
+
+	// Suppose we already have account record in db
+	_, e = accountRepo.InsertOne(context.Background())
+	if e != nil {
+		return e
 	}
 
 	accountController := controller.NewAccountController(transactionClient, accountRepo, transactionRepo)
